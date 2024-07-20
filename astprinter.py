@@ -28,4 +28,8 @@ if __name__ == "__main__":
         Token(TokenType.STAR, "*", None, 1),
         Grouping(Literal(45.67)),
     )
+    print("raw")
     print(expression)
+    print("pretty")
+    pretty = AstPrinter().print(expression)
+    print(pretty)
