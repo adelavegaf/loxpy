@@ -1,7 +1,9 @@
 from pathlib import Path
+from astprinter import AstPrinter
 from error import Error
 import sys
 
+from parser import Parser
 from scanner import Scanner
 
 
@@ -37,9 +39,12 @@ def run_file(file: Path) -> None:
 def run(source: str) -> None:
     scanner = Scanner(source)
     tokens = scanner.scan_tokens()
-    # TODO: we should handle errors
-    for token in tokens:
-        print(token)
+    parser = Parser(tokens)
+    expression = parser.parse()
+    if expression is None:
+        return
+    pretty = AstPrinter().print(expression)
+    print(pretty)
 
 
 if __name__ == "__main__":
