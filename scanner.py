@@ -60,6 +60,10 @@ class Scanner:
                 self.add_token(TokenType.SEMICOLON)
             case "*":
                 self.add_token(TokenType.STAR)
+            case "?":
+                self.add_token(TokenType.QUESTION_MARK)
+            case ":":
+                self.add_token(TokenType.COLON)
             # ambiguous one or two character tokens
             case "!":
                 if self.match("="):

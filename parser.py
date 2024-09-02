@@ -1,5 +1,5 @@
 from error import Error
-from expr import Binary, Expr, Grouping, Literal, Unary
+from expr import Binary, Expr, Grouping, Literal, Ternary, Unary
 from tokens import Token, TokenType
 
 
@@ -8,15 +8,49 @@ class ParseError(RuntimeError):
 
 
 class Parser:
+    """
+    comma          → expression ( "," expression )* ;
+    ternary        → expression "?" ternary ":" ternary
+                   | expression ;
+    expression     → equality ;
+    equality       → comparison ( ( "!=" | "==" ) comparison )* ;
+    comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
+    term           → factor ( ( "-" | "+" ) factor )* ;
+    factor         → unary ( ( "/" | "*" ) unary )* ;
+    unary          → ( "!" | "-" ) unary
+                   | primary ;
+    primary        → NUMBER | STRING | "true" | "false" | "nil"
+                   | "(" expression ")" ;
+    """
+
     def __init__(self, tokens: list[Token]) -> None:
         self._tokens: list[Token] = tokens
         self._current: int = 0
 
     def parse(self) -> Expr | None:
         try:
-            return self._expression()
+            return self._comma()
         except ParseError:
             return None
+
+    def _comma(self) -> Expr:
+        left = self._ternary()
+        while self._match(TokenType.COMMA):
+            operator = self._previous()
+            right = self._ternary()
+            left = Binary(left, operator, right)
+        return left
+
+    def _ternary(self) -> Expr:
+        expr = self._expression()
+        if self._peek().type == TokenType.QUESTION_MARK:
+            self._advance()
+            left = self._ternary()
+            self._consume(TokenType.COLON, "Expect ':' after expression")
+            right = self._ternary()
+            return Ternary(expr, left, right)
+        else:
+            return expr
 
     def _expression(self) -> Expr:
         return self._equality()

@@ -1,10 +1,13 @@
-from expr import Binary, Expr, Grouping, Literal, Unary, Visitor
+from expr import Binary, Expr, Grouping, Literal, Ternary, Unary, Visitor
 from tokens import Token, TokenType
 
 
 class AstPrinter(Visitor[str]):
     def print(self, expr: Expr) -> str:
         return expr.accept(self)
+
+    def visit_ternary(self, ternary: Ternary) -> str:
+        return f"(?: {self.print(ternary.cmp)} {self.print(ternary.left)} {self.print(ternary.right)})"
 
     def visit_binary(self, binary: Binary) -> str:
         return f"({binary.operator.lexeme} {self.print(binary.left)} {self.print(binary.right)})"

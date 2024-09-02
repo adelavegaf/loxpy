@@ -12,6 +12,16 @@ class Expr(ABC):
 
 
 @dataclass
+class Ternary(Expr):
+    cmp: Expr
+    left: Expr
+    right: Expr
+
+    def accept[R](self, visitor: Visitor[R]) -> R:
+        return visitor.visit_ternary(self)
+
+
+@dataclass
 class Binary(Expr):
     left: Expr
     operator: Token
@@ -47,6 +57,9 @@ class Unary(Expr):
 
 
 class Visitor[R](ABC):
+    @abstractmethod
+    def visit_ternary(self, ternary: Ternary) -> R: ...
+
     @abstractmethod
     def visit_binary(self, binary: Binary) -> R: ...
 
