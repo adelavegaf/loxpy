@@ -10,15 +10,27 @@ class ParseError(RuntimeError):
 class Parser:
     """
     comma          → expression ( "," expression )* ;
+
     ternary        → expression "?" ternary ":" ternary
                    | expression ;
+
     expression     → equality ;
-    equality       → comparison ( ( "!=" | "==" ) comparison )* ;
-    comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
-    term           → factor ( ( "-" | "+" ) factor )* ;
-    factor         → unary ( ( "/" | "*" ) unary )* ;
+
+    equality       → comparison ( ( "!=" | "==" ) comparison )*
+                   | ( ("!=" | "==" ) comparison) equality* ;
+
+    comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )*
+                   | ( ">" | ">=" | "<" | "<=" ) comparison* ;
+
+    term           → factor ( ( "-" | "+" ) factor )*
+                   | ( "-" | "+" ) term* ;
+
+    factor         → unary ( ( "/" | "*" ) unary )*
+                   | ( "/" | "*" ) factor* ;
+
     unary          → ( "!" | "-" ) unary
                    | primary ;
+
     primary        → NUMBER | STRING | "true" | "false" | "nil"
                    | "(" expression ")" ;
     """
@@ -56,48 +68,80 @@ class Parser:
         return self._equality()
 
     def _equality(self) -> Expr:
-        expr = self._comparison()
-        while self._match(TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL):
-            operator = self._previous()
-            right = self._comparison()
-            expr = Binary(expr, operator, right)
-
-        return expr
+        ops = TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL
+        if self._match(*ops):
+            # error production
+            Error.parse_error(
+                self._previous(), "expected left hand operand, found none"
+            )
+            _right = self._equality()
+            return Literal(None)
+        else:
+            expr = self._comparison()
+            while self._match(*ops):
+                operator = self._previous()
+                right = self._comparison()
+                expr = Binary(expr, operator, right)
+            return expr
 
     def _comparison(self) -> Expr:
-        left = self._term()
-        while self._match(
+        ops = (
             TokenType.LESS,
             TokenType.LESS_EQUAL,
             TokenType.GREATER,
             TokenType.GREATER_EQUAL,
-        ):
-            operator = self._previous()
-            right = self._term()
-            left = Binary(left, operator, right)
-        return left
+        )
+        if self._match(*ops):
+            # error production
+            Error.parse_error(
+                self._previous(), "expected left hand operand, found none"
+            )
+            _right = self._comparison()
+            return Literal(None)
+        else:
+            left = self._term()
+            while self._match(*ops):
+                operator = self._previous()
+                right = self._term()
+                left = Binary(left, operator, right)
+            return left
 
     def _term(self) -> Expr:
-        left = self._factor()
-        while self._match(
-            TokenType.MINUS,
-            TokenType.PLUS,
-        ):
-            operator = self._previous()
-            right = self._factor()
-            left = Binary(left, operator, right)
-        return left
+        # We only match on Plus here since Minus is a valid unary operator
+        if self._match(TokenType.PLUS):
+            # error production
+            Error.parse_error(
+                self._previous(), "expected left hand operand, found none"
+            )
+            _right = self._comparison()
+            return Literal(None)
+        else:
+            left = self._factor()
+            while self._match(TokenType.MINUS, TokenType.PLUS):
+                operator = self._previous()
+                right = self._factor()
+                left = Binary(left, operator, right)
+            return left
 
     def _factor(self) -> Expr:
-        left = self._unary()
-        while self._match(
-            TokenType.STAR,
-            TokenType.SLASH,
-        ):
-            operator = self._previous()
-            right = self._unary()
-            left = Binary(left, operator, right)
-        return left
+        ops = (TokenType.STAR, TokenType.SLASH)
+        if self._match(*ops):
+            # error production
+            Error.parse_error(
+                self._previous(), "expected left hand operand, found none"
+            )
+            _right = self._comparison()
+            return Literal(None)
+        else:
+            left = self._unary()
+            while self._match(
+                TokenType.STAR,
+                TokenType.SLASH,
+            ):
+                operator = self._previous()
+                right = self._unary()
+                left = Binary(left, operator, right)
+            return left
 
     def _unary(self) -> Expr:
         if self._match(TokenType.BANG, TokenType.MINUS):
