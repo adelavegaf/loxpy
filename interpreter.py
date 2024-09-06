@@ -58,6 +58,10 @@ class Interpreter(Visitor[LoxType]):
                 return Number(l + r)
             case (TokenType.PLUS, String(l), String(r)):
                 return String(l + r)
+            case (TokenType.PLUS, String(l), r):
+                return String(l + _stringify(r))
+            case (TokenType.PLUS, l, String(r)):
+                return String(_stringify(l) + r)
             case (TokenType.EQUAL_EQUAL, l, r):
                 return Bool(_is_equal(l, r))
             case (TokenType.BANG_EQUAL, l, r):
