@@ -28,8 +28,13 @@ class Interpreter(Visitor[LoxType]):
                 return Number(r * -1)
             case (TokenType.BANG, r):
                 return Bool(not _is_truthy(r))
-            case _:
-                raise RuntimeErr(unary.operator, f"invalid unary expression: {unary}")
+            case (_, right):
+                lexeme = unary.operator.lexeme
+                rclass = right.__class__.__name__.lower()
+                raise RuntimeErr(
+                    unary.operator,
+                    f"unary operator '{lexeme}' can't be applied to {rclass}",
+                )
 
     def visit_binary(self, binary: Binary) -> LoxType:
         left = self._evaluate(binary.left)
@@ -57,8 +62,14 @@ class Interpreter(Visitor[LoxType]):
                 return Bool(_is_equal(l, r))
             case (TokenType.BANG_EQUAL, l, r):
                 return Bool(not _is_equal(l, r))
-            case _:
-                raise RuntimeErr(binary.operator, f"invalid binary operator: {binary}")
+            case (_, l, r):
+                lexeme = binary.operator.lexeme
+                lclass = l.__class__.__name__.lower()
+                rclass = r.__class__.__name__.lower()
+                raise RuntimeErr(
+                    binary.operator,
+                    f"binary operator '{lexeme}' can't be applied to {lclass} and {rclass}",
+                )
 
     def visit_ternary(self, ternary: Ternary) -> LoxType:
         cmp = self._evaluate(ternary.cmp)
