@@ -3,6 +3,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
+from langtypes import LoxType
 from tokens import Token
 
 
@@ -41,7 +42,7 @@ class Grouping(Expr):
 
 @dataclass
 class Literal(Expr):
-    value: object
+    value: LoxType
 
     def accept[R](self, visitor: Visitor[R]) -> R:
         return visitor.visit_literal(self)

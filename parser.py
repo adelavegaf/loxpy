@@ -1,5 +1,6 @@
 from error import Error
 from expr import Binary, Expr, Grouping, Literal, Ternary, Unary
+from langtypes import Bool
 from tokens import Token, TokenType
 
 
@@ -155,9 +156,9 @@ class Parser:
         if self._match(TokenType.NUMBER, TokenType.STRING):
             return Literal(self._previous().literal)
         elif self._match(TokenType.FALSE):
-            return Literal(False)
+            return Literal(Bool(False))
         elif self._match(TokenType.TRUE):
-            return Literal(True)
+            return Literal(Bool(True))
         elif self._match(TokenType.NIL):
             return Literal(None)
         elif self._match(TokenType.LEFT_PAREN):

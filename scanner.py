@@ -1,4 +1,5 @@
 from error import Error
+from langtypes import LoxType, Number, String
 from tokens import Token, TokenType
 
 
@@ -109,7 +110,7 @@ class Scanner:
             case _:
                 Error.error(self.line, "Unexpected character")
 
-    def add_token(self, token_type: TokenType, literal: object = None) -> None:
+    def add_token(self, token_type: TokenType, literal: LoxType = None) -> None:
         token = Token(
             token_type, self.source[self.start : self.current], literal, self.line
         )
@@ -128,7 +129,7 @@ class Scanner:
         # consume "
         self.advance()
         literal = self.source[self.start + 1 : self.current - 1]
-        self.add_token(TokenType.STRING, literal)
+        self.add_token(TokenType.STRING, String(literal))
 
     def number(self) -> None:
         while is_digit(self.peek()):
@@ -139,7 +140,8 @@ class Scanner:
             while is_digit(self.peek()):
                 self.advance()
 
-        self.add_token(TokenType.NUMBER, float(self.source[self.start : self.current]))
+        literal = float(self.source[self.start : self.current])
+        self.add_token(TokenType.NUMBER, Number(literal))
 
     def identifier(self) -> None:
         while is_alphanumeric(self.peek()):

@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from enum import Enum, auto
 
+from langtypes import LoxType
+
 
 class TokenType(Enum):
     # Single-character tokens
@@ -58,7 +60,7 @@ class TokenType(Enum):
 class Token:
     type: TokenType
     lexeme: str
-    literal: object
+    literal: LoxType
     line: int
 
     def __repr__(self) -> str:

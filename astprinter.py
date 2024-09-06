@@ -1,4 +1,5 @@
 from expr import Binary, Expr, Grouping, Literal, Ternary, Unary, Visitor
+from langtypes import Number
 from tokens import Token, TokenType
 
 
@@ -27,9 +28,9 @@ class AstPrinter(Visitor[str]):
 
 if __name__ == "__main__":
     expression = Binary(
-        Unary(Token(TokenType.MINUS, "-", None, 1), Literal(123)),
+        Unary(Token(TokenType.MINUS, "-", None, 1), Literal(Number(123))),
         Token(TokenType.STAR, "*", None, 1),
-        Grouping(Literal(45.67)),
+        Grouping(Literal(Number(45.67))),
     )
     print("raw")
     print(expression)
