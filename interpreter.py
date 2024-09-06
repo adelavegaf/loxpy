@@ -42,6 +42,8 @@ class Interpreter(Visitor[LoxType]):
         match (binary.operator.type, left, right):
             case (TokenType.MINUS, Number(l), Number(r)):
                 return Number(l - r)
+            case (TokenType.SLASH, Number(l), Number(0)):
+                raise RuntimeErr(binary.operator, "division by 0")
             case (TokenType.SLASH, Number(l), Number(r)):
                 return Number(l / r)
             case (TokenType.STAR, Number(l), Number(r)):
